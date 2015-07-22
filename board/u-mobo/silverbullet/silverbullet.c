@@ -420,6 +420,11 @@ static int detect_i2c(struct display_info_t const *dev)
 		(0 == i2c_probe(dev->addr)));
 }
 
+static int detect_dummy(struct display_info_t const *dev)
+{
+	return(1);
+}
+
 static void enable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
@@ -440,106 +445,30 @@ static void enable_rgb(struct display_info_t const *dev)
 #endif
 }
 
+static void enable_rgb_lvdsbacklight(struct display_info_t const *dev)
+{
+	enable_rgb(dev);
+	gpio_direction_output(LVDS_BACKLIGHT_GP, 1);
+}
+
 struct display_info_t const displays[] = {{
-	.bus	= -1,
-	.addr	= 0,
+	.bus	= 0,	
+	.addr	= 0x08,	/* hack: actually PSoC */
 	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_hdmi,
-	.enable	= do_enable_hdmi,
+	.detect	= detect_dummy,
+	.enable	= enable_rgb_lvdsbacklight,
 	.mode	= {
-		.name           = "HDMI",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-#ifdef NEED_EXAMPLES
-} }, {
-	.bus	= 2,
-	.addr	= 0x4,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "Hannstar-XGA",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 768,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x38,
-	.pixfmt	= IPU_PIX_FMT_LVDS666,
-	.detect	= detect_i2c,
-	.enable	= enable_lvds,
-	.mode	= {
-		.name           = "wsvga-lvds",
-		.refresh        = 60,
-		.xres           = 1024,
-		.yres           = 600,
-		.pixclock       = 15385,
-		.left_margin    = 220,
-		.right_margin   = 40,
-		.upper_margin   = 21,
-		.lower_margin   = 7,
-		.hsync_len      = 60,
-		.vsync_len      = 10,
-		.sync           = FB_SYNC_EXT,
-		.vmode          = FB_VMODE_NONINTERLACED
-} }, {
-	.bus	= 2,
-	.addr	= 0x48,
-	.pixfmt	= IPU_PIX_FMT_RGB666,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name           = "wvga-rgb",
-		.refresh        = 57,
-		.xres           = 800,
-		.yres           = 480,
-		.pixclock       = 37037,
-		.left_margin    = 40,
-		.right_margin   = 60,
-		.upper_margin   = 10,
-		.lower_margin   = 10,
-		.hsync_len      = 20,
-		.vsync_len      = 10,
-		.sync           = 0,
-		.vmode          = FB_VMODE_NONINTERLACED
-#endif /* NEED_EXAMPLES */
-} }, {
-	.bus	= 0,
-	.addr	= 0x2a,	/* hack: actually ID95APM addr */
-	.pixfmt	= IPU_PIX_FMT_RGB24,
-	.detect	= detect_i2c,
-	.enable	= enable_rgb,
-	.mode	= {
-		.name		= "SAMSUNG-LMS700",
+		.name		= "AMPIRE-AM480272MNTMQW-T00H",
 		.refresh	= 60,
-		.xres		= 800,
-		.yres		= 480,
-		.pixclock	= 40816, /* picosecond (24.5 MHz) */
-		.left_margin	= 16,
-		.right_margin	= 8,
-		.upper_margin	= 4,
-		.lower_margin	= 9,
-		.hsync_len	= 8,
-		.vsync_len	= 4,
+		.xres		= 480,
+		.yres		= 272,
+		.pixclock	= 111111, /* picosecond (9 MHz) */
+		.left_margin	= 40,
+		.right_margin	= 2,
+		.upper_margin	= 2,
+		.lower_margin	= 2,
+		.hsync_len	= 2,
+		.vsync_len	= 10,
 		.sync		= 0,
 		.vmode		= FB_VMODE_NONINTERLACED
 } } };
@@ -607,9 +536,11 @@ static void setup_display(void)
 int board_early_init_f(void)
 {
 	setup_iomux_uart();
+/*
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
 #endif
+*/
 	return 0;
 }
 
@@ -643,6 +574,16 @@ int board_init(void)
 	setup_i2c(0, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info0);
 	setup_i2c(1, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info1);
 	setup_i2c(2, CONFIG_SYS_I2C_SPEED, 0x7f, &i2c_pad_info2);
+
+	/* Setup display (done here, after I2C initialization, because maybe some LCD detection requires I2C */
+	printf("\r\n#### Setting up the display\r\n");
+	setup_display();
+
+	/* Turn LVDS backlight ON //!! */
+	/* //!!
+	printf("\r\n#### LVDS backlight on\r\n");
+	gpio_direction_output(LVDS_BACKLIGHT_GP, 1);
+	*/
 
 #ifdef CONFIG_CMD_SATA
 	setup_sata();
