@@ -408,6 +408,7 @@ static iomux_v3_cfg_t const rgb_pads[] = {
 	MX6_PAD_DISP0_DAT23__IPU1_DISP0_DATA23,
 };
 
+/*
 static void do_enable_hdmi(struct display_info_t const *dev)
 {
 	imx_enable_hdmi_phy();
@@ -420,11 +421,6 @@ static int detect_i2c(struct display_info_t const *dev)
 		(0 == i2c_probe(dev->addr)));
 }
 
-static int detect_dummy(struct display_info_t const *dev)
-{
-	return(1);
-}
-
 static void enable_lvds(struct display_info_t const *dev)
 {
 	struct iomuxc *iomux = (struct iomuxc *)
@@ -433,6 +429,12 @@ static void enable_lvds(struct display_info_t const *dev)
 	reg |= IOMUXC_GPR2_DATA_WIDTH_CH0_24BIT;
 	writel(reg, &iomux->gpr[2]);
 	gpio_direction_output(LVDS_BACKLIGHT_GP, 1);
+}
+*/
+
+static int detect_dummy(struct display_info_t const *dev)
+{
+	return(1);
 }
 
 static void enable_rgb(struct display_info_t const *dev)
