@@ -193,7 +193,9 @@
 	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"mmcdev=0\0" \
+	"mmcfirst=0\0" \
+	"mmcsecond=1\0" \
+	"mmcdev=${mmcfirst}\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk0p2 rootwait rw\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -246,8 +248,10 @@
 			"bootm; " \
 		"fi;\0"
 
+
 #define CONFIG_BOOTCOMMAND \
-	"mmc dev ${mmcdev}; if mmc rescan; then " \
+	"mmc dev ${mmcdev}; " \
+	"if mmc rescan; then " \
 		"if run loadlogo; then " \
 			"run displaylogo; " \
 		"fi; " \
@@ -259,7 +263,26 @@
 			"else run netboot; " \
 			"fi; " \
 		"fi; " \
-	"else run netboot; fi"
+	"else " \
+		"env set mmcdev ${mmcsecond}; " \
+		"mmc dev ${mmcdev}; " \
+		"if mmc rescan; then " \
+			"if run loadlogo; then " \
+				"run displaylogo; " \
+			"fi; " \
+			"if run loadbootscript; then " \
+				"run bootscript; " \
+			"else " \
+				"if run loaduimage; then " \
+					"run mmcboot; " \
+				"else run netboot; " \
+				"fi; " \
+			"fi; " \
+		"else " \
+			"run netboot; " \
+		"fi; " \
+	"fi"
+
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
