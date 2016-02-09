@@ -63,11 +63,13 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* U-MoBo baseboard */
+/* //!!
 #define CONFIG_UMOBO_BASEBOARD
 #define CONFIG_POWER
 #define CONFIG_POWER_I2C
 #define CONFIG_POWER_ID95APM
 #define CONFIG_SYS_ID95APM_PMIC_I2C_ADDR 0x2a
+*/
 
 /* MMC Configs */
 #define CONFIG_FSL_ESDHC
@@ -193,9 +195,9 @@
 	"fdt_addr=0x18000000\0" \
 	"boot_fdt=try\0" \
 	"ip_dyn=yes\0" \
-	"mmcfirst=0\0" \
-	"mmcsecond=1\0" \
-	"mmcdev=${mmcfirst}\0" \
+	"mmcfirst=1\0" \
+	"mmcsecond=0\0" \
+	"mmcdev=1\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk0p2 rootwait rw\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -250,6 +252,7 @@
 
 
 #define CONFIG_BOOTCOMMAND \
+    "env set mmcdev ${mmcfirst}; " \
 	"mmc dev ${mmcdev}; " \
 	"if mmc rescan; then " \
 		"if run loadlogo; then " \
