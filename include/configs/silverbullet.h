@@ -184,7 +184,6 @@
 #define CONFIG_DRIVE_TYPES CONFIG_DRIVE_SATA CONFIG_DRIVE_MMC
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"ethaddr=00:04:9f:00:ea:d3\0" \
 	"logo=logo.bmp\0" \
 	"script=boot.scr\0" \
 	"uimage=uImage\0" \
