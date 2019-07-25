@@ -187,7 +187,7 @@ static void setup_iomux_enet(void)
 	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
 
 	udelay(100 * 1000); /* delay 100ms */
-	gpio_set_value(RGMII_PHY_RESET, 1); /* deassert PHY reset */
+	/* //!! gpio_set_value(RGMII_PHY_RESET, 1); */ /* deassert PHY reset */
 
 	imx_iomux_v3_setup_multiple_pads(enet_pads2, ARRAY_SIZE(enet_pads2));
 }
